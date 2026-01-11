@@ -3,11 +3,13 @@ import Reactivity
 @Reactive
 class TodoViewModel {
   private(set) var items: [TodoItem] = []
+  private var lastId = 0
 
   func onClickAddNewButton() {
+    lastId += 1
     items.append(
       TodoItem(
-        id: (items.last?.id ?? 0) + 1,
+        id: lastId,
         title: "Title",
         description: "Description",
         deadline: "2026-01-15"
