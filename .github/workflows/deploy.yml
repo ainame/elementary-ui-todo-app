@@ -34,6 +34,9 @@ jobs:
           apt-get install -y nodejs
           npm install -g pnpm@9
 
+      - name: Install wasm-opt
+        run: apt-get install -y binaryen
+
       - name: Resolve Swift packages
         run: swift package resolve
 
