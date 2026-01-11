@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [
     swiftWasm({
       useEmbeddedSDK: true,
+      useWasmOpt: true,
     }),
     tailwindcss(),
   ],
