@@ -16,20 +16,27 @@ This is a Todo app built with ElementaryUI, a Swift-based framework for building
 - Swift compilation is handled automatically by the Vite plugin during development
 
 ### Frontend Build (Vite)
-- **Development server**: `npm run dev` - Starts Vite dev server with hot reload
-- **Production build**: `npm run build` - Creates optimized production bundle
-- **Preview**: `npm run preview` - Preview production build locally
-- **Dependency resolution**: `npm run preinstall` - Runs `swift package resolve` automatically before npm install
+- **Development server**: `pnpm run dev` - Starts Vite dev server with hot reload
+- **Production build**: `pnpm run build` - Creates optimized production bundle
+- **Preview**: `pnpm run preview` - Preview production build locally
+- **Dependency resolution**: `pnpm run preinstall` - Runs `swift package resolve` automatically before install
+- **Note**: This project uses pnpm, not npm
 
 ## Architecture
 
 ### Swift Layer (Sources/WebApp/)
 - **App.swift**: Entry point that creates and mounts the ElementaryUI Application
-- **ContentView.swift**: Main UI view containing the todo list component
-  - Uses `@State` for reactive state management
-  - `@View` macro for defining UI components
-  - ElementaryUI's HTML-like DSL (div, h1, p, button, span, etc.)
-  - Tailwind CSS classes applied via `.attributes(.class(...))`
+- **ContentView.swift**: Contains all UI components and view models
+  - **TodoItem**: Plain data model class (not @Reactive) with id, title, description, deadline
+  - **TodoViewModel**: `@Reactive` class managing todo items array and business logic
+  - **ContentView**: Main view that renders the todo list using TodoViewModel
+  - **TodoItemView**: Container view managing edit mode state (isEditMode)
+  - **TodoItemViewerView**: Read-only view with Edit and Delete buttons
+  - **TodoItemEditView**: Form view with Cancel and Done buttons
+  - Uses `@State` for component-level state (like isEditMode)
+  - Uses `@View` macro for defining UI components
+  - ElementaryUI's HTML-like DSL (div, h1, p, button, span, input, textarea, etc.)
+  - Tailwind CSS classes applied via `.class()` parameter
   - Animations via `.animation()` and `.animateContainerLayout()`
 
 ### TypeScript Layer (src/)
@@ -59,27 +66,62 @@ This is a Todo app built with ElementaryUI, a Swift-based framework for building
 ## Key Patterns
 
 ### State Management
-The app uses ElementaryUI's reactive state system with `@State` properties. Changes to state automatically trigger UI updates.
+- **@Reactive on ViewModels**: Use `@Reactive` class for view models that manage collections and business logic
+  - Example: `@Reactive class TodoViewModel { var items: [TodoItem] = [] }`
+- **Plain model classes**: Data models like TodoItem should NOT use @Reactive
+- **@State for UI state**: Use `@State` in views for component-level UI state like `isEditMode`
+- Changes to @Reactive properties automatically trigger UI updates
+
+### Property Binding with #Binding()
+Use the `#Binding()` macro to bind directly to reactive object properties:
+```swift
+TodoItemEditView(
+    item: item,  // Pass the whole item
+    ...
+)
+
+// In TodoItemEditView:
+input(.type(.text))
+    .bindValue(#Binding(item.title))  // Bind directly to property
+```
+This creates two-way binding without intermediate @State variables.
+
+### Inline Editing Pattern
+Views can switch between view and edit modes using @State:
+```swift
+@State var isEditMode: Bool = false
+
+if isEditMode {
+    TodoItemEditView(...)  // Form with Cancel/Done buttons
+} else {
+    TodoItemViewerView(...)  // Read-only with Edit button
+}
+```
 
 ### UI Components
-Components are defined using the `@View` macro and return a `body` computed property containing the view hierarchy. ElementaryUI provides HTML element functions (div, span, button, etc.) that can be composed with modifiers like `.attributes()`, `.onClick()`, and `.animation()`.
+Components are defined using the `@View` macro and return a `body` computed property containing the view hierarchy. ElementaryUI provides HTML element functions (div, span, button, input, textarea, etc.) that can be composed with modifiers like `.class()`, `.onClick()`, `.bindValue()`, and `.animation()`.
 
 ### Styling
-All styling is done with Tailwind CSS utility classes. The project uses Tailwind v4 with the Vite plugin for CSS processing.
+- All styling is done with Tailwind CSS utility classes
+- Classes are passed as parameters: `.class("flex items-center gap-2")`
+- The project uses Tailwind v4 with the Vite plugin for CSS processing
 
 ## Development Workflow
 
 1. Ensure Swift 6.2+ toolchain and WASM SDK are installed
-2. Run `npm install` (automatically resolves Swift packages)
-3. Run `npm run dev` to start development server
+2. Run `pnpm install` (automatically resolves Swift packages)
+3. Run `pnpm run dev` to start development server
 4. Edit Swift files in `Sources/WebApp/` - changes trigger automatic rebuild
 5. Edit TypeScript/CSS in `src/` - changes trigger hot reload
-6. Run `npm run build` for production deployment
+6. Run `pnpm run build` for production deployment
 
 ## Important Notes
 
 - Swift files use Swift 5 language mode despite Swift 6.2 toolchain
 - The Swift WASM module is loaded asynchronously in the browser
 - ElementaryUI components are rendered as actual DOM elements
-- Date formatting uses Swift's `.formatted()` API
 - The app uses browser WASI shim for WASM compatibility
+- Use `#Binding()` macro for direct property binding, not intermediate @State variables
+- Only use @Reactive on view models that manage collections, not on plain model classes
+- Keypaths don't work in Embedded Swift - use closures for ForEach keys: `key: { $0.id }`
+- For textarea binding, use `.onInput { event in ... }` as `.bindValue()` only works on input elements
