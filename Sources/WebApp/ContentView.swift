@@ -1,26 +1,51 @@
 import ElementaryUI
 import Reactivity
 
-@Reactive
 final class TodoItem: Identifiable {
-    let id: String
+    let id: Int
     var title: String
     var description: String
     var deadline: String
 
     init(id: Int, title: String, description: String, deadline: String) {
-        self.id = "\(id)"
+        self.id = id
         self.title = title
         self.description = description
         self.deadline = deadline
     }
 }
 
+@Reactive
+class TodoViewModel {
+    var items: [TodoItem] = []
+
+    func onAddNew() {
+        onAddNew(
+            TodoItem(
+                id: (items.last?.id ?? 0) + 1,
+                title: "Title",
+                description: "Description",
+                deadline: "2026-01-15"
+            )
+        )
+    }
+
+    func onAddNew(_ item: TodoItem) {
+        items.append(item)
+    }
+
+    func onDelete(at index: Int) {
+        items.remove(at: index)
+    }
+
+    func onUpdate(item: TodoItem, at index: Int) {
+        items[index] = item
+    }
+}
+
 @View
 struct ContentView {
-    @State var count: Int = 0
-    @State var nextId: Int = 0
-    @State var items: [TodoItem] = []
+    let viewModel = TodoViewModel()
 
     var body: some View {
         div(.class("max-w-3xl mx-auto p-8")) {
@@ -38,42 +63,26 @@ struct ContentView {
                 "➕ Add New Todo"
             }
             .onClick {
-                createTodoItem()
+                viewModel.onAddNew()
             }
 
             div(.class("space-y-4")) {
-                ForEach(items, key: { $0.id }) { item in
+                ForEach(viewModel.items.enumerated(), key: { $0.element.id }) { item in
                     TodoItemView(
-                        item: #Binding(item),
-                        onDelete: { deleteItem(item) }
+                        item: item.element,
+                        onDelete: { viewModel.onDelete(at: item.offset) }
                     )
                 }
             }
         }
         .animateContainerLayout()
-        .animation(.smooth, value: count)
-    }
-
-    func createTodoItem() {
-        items.append(
-            TodoItem(
-                id: nextId,
-                title: "Title",
-                description: "Description",
-                deadline: "2026-01-15"
-            )
-        )
-        nextId += 1
-    }
-
-    func deleteItem(_ item: TodoItem) {
-        items.removeAll { $0.id == item.id }
+        .animation(.smooth, value: viewModel.items.count)
     }
 }
 
 @View
 struct TodoItemView {
-    @Binding var item: TodoItem
+    let item: TodoItem
     let onDelete: () -> Void
 
     @State var isEditMode: Bool = false
@@ -82,9 +91,7 @@ struct TodoItemView {
         div(.class("bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-blue-500")) {
             if isEditMode {
                 TodoItemEditView(
-                    title: $item.title,
-                    description: $item.description,
-                    deadline: $item.deadline,
+                    item: item,
                     onCancel: { isEditMode = false },
                     onSave: { isEditMode = false }
                 )
@@ -153,9 +160,7 @@ struct TodoItemViewerView {
 
 @View
 struct TodoItemEditView {
-    @Binding var title: String
-    @Binding var description: String
-    @Binding var deadline: String
+    let item: TodoItem
     let onCancel: () -> Void
     let onSave: () -> Void
 
@@ -176,16 +181,12 @@ struct TodoItemEditView {
                 button(.class("text-gray-600 hover:text-gray-700 font-medium text-sm px-3 py-1 rounded hover:bg-gray-100 transition-colors")) {
                     "Cancel"
                 }
-                .onClick {
-                    onCancel()
-                }
+                .onClick { onCancel() }
 
                 button(.class("bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-3 py-1 rounded transition-colors")) {
                     "Done"
                 }
-                .onClick {
-                    onSave()
-                }
+                .onClick { onSave() }
             }
         }
     }
@@ -203,11 +204,8 @@ struct TodoItemEditView {
             label(.class("block text-sm font-medium text-gray-700 mb-1")) {
                 "Title"
             }
-            input(
-                .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                .type(.text)
-            )
-            .bindValue($title)
+            input(.type(.text), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+                .bindValue(#Binding(item.title))
         }
     }
 
@@ -216,14 +214,12 @@ struct TodoItemEditView {
             label(.class("block text-sm font-medium text-gray-700 mb-1")) {
                 "Description"
             }
-            textarea(
-                .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24")
-            ) {
-                description
+            textarea(.class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24")) {
+                item.description
             }
             .onInput { event in
                 if let value = event.targetValue {
-                    description = value
+                    item.description = value
                 }
             }
         }
@@ -234,11 +230,8 @@ struct TodoItemEditView {
             label(.class("block text-sm font-medium text-gray-700 mb-1")) {
                 "Deadline"
             }
-            input(
-                .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                .type(.date)
-            )
-            .bindValue($deadline)
+            input(.type(.date), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+                .bindValue(#Binding(item.deadline))
         }
     }
 }
