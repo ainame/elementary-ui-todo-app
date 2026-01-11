@@ -44,7 +44,7 @@ struct ContentView {
             div(.class("space-y-4")) {
                 ForEach(items, key: { $0.id }) { item in
                     TodoItemView(
-                        item: item,
+                        item: #Binding(item),
                         onDelete: { deleteItem(item) }
                     )
                 }
@@ -73,50 +73,29 @@ struct ContentView {
 
 @View
 struct TodoItemView {
-    let item: TodoItem
+    @Binding var item: TodoItem
     let onDelete: () -> Void
 
     @State var isEditMode: Bool = false
-    @State var editTitle: String = ""
-    @State var editDescription: String = ""
-    @State var editDeadline: String = ""
 
     var body: some View {
         div(.class("bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-blue-500")) {
             if isEditMode {
                 TodoItemEditView(
-                    editTitle: $editTitle,
-                    editDescription: $editDescription,
-                    editDeadline: $editDeadline,
-                    onCancel: { cancelEditing() },
-                    onSave: { saveEditing() }
+                    title: $item.title,
+                    description: $item.description,
+                    deadline: $item.deadline,
+                    onCancel: { isEditMode = false },
+                    onSave: { isEditMode = false }
                 )
             } else {
                 TodoItemViewerView(
                     item: item,
-                    onEdit: { startEditing() },
+                    onEdit: { isEditMode = true },
                     onDelete: onDelete
                 )
             }
         }
-    }
-
-    func startEditing() {
-        editTitle = item.title
-        editDescription = item.description
-        editDeadline = item.deadline
-        isEditMode = true
-    }
-
-    func cancelEditing() {
-        isEditMode = false
-    }
-
-    func saveEditing() {
-        item.title = editTitle
-        item.description = editDescription
-        item.deadline = editDeadline
-        isEditMode = false
     }
 }
 
@@ -174,9 +153,9 @@ struct TodoItemViewerView {
 
 @View
 struct TodoItemEditView {
-    @Binding var editTitle: String
-    @Binding var editDescription: String
-    @Binding var editDeadline: String
+    @Binding var title: String
+    @Binding var description: String
+    @Binding var deadline: String
     let onCancel: () -> Void
     let onSave: () -> Void
 
@@ -228,7 +207,7 @@ struct TodoItemEditView {
                 .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"),
                 .type(.text)
             )
-            .bindValue($editTitle)
+            .bindValue($title)
         }
     }
 
@@ -240,11 +219,11 @@ struct TodoItemEditView {
             textarea(
                 .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24")
             ) {
-                editDescription
+                description
             }
             .onInput { event in
                 if let value = event.targetValue {
-                    editDescription = value
+                    description = value
                 }
             }
         }
@@ -259,7 +238,7 @@ struct TodoItemEditView {
                 .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"),
                 .type(.date)
             )
-            .bindValue($editDeadline)
+            .bindValue($deadline)
         }
     }
 }
