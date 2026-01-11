@@ -23,6 +23,8 @@ struct TodoItemView {
         )
       }
     }
+    .animateContainerLayout()
+    .animation(.bouncy, value: isEditMode)
   }
 }
 
