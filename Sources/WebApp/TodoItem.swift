@@ -1,4 +1,4 @@
-final class TodoItem: Identifiable {
+struct TodoItem: Identifiable, Equatable {
   let id: Int
   var title: String
   var description: String

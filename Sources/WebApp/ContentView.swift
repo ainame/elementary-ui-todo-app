@@ -24,14 +24,15 @@ struct ContentView {
         "➕ Add New Todo"
       }
       .onClick {
-        viewModel.onAddNew()
+        viewModel.onClickAddNewButton()
       }
 
       div(.class("space-y-4")) {
         ForEach(viewModel.items.enumerated(), key: { String($0.element.id) }) { item in
           TodoItemView(
             item: item.element,
-            onDelete: { viewModel.onDelete(at: item.offset) }
+            onClickDeleteButton: { viewModel.onClickDeleteButton(at: item.offset) },
+            onClickDoneButton: { viewModel.onClickDoneButton(with: $0, at: item.offset) },
           )
         }
       }

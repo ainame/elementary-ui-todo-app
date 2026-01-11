@@ -3,7 +3,8 @@ import ElementaryUI
 @View
 struct TodoItemView {
   let item: TodoItem
-  let onDelete: () -> Void
+  let onClickDeleteButton: () -> Void
+  let onClickDoneButton: (TodoItem) -> Void
 
   @State var isEditMode: Bool = false
 
@@ -12,14 +13,19 @@ struct TodoItemView {
       if isEditMode {
         TodoItemEditView(
           item: item,
-          onCancel: { isEditMode = false },
-          onSave: { isEditMode = false }
+          onClickCancelButton: {
+            isEditMode = false
+          },
+          onClickDoneButton: { updatedItem in
+            isEditMode = false
+            onClickDoneButton(updatedItem)
+          }
         )
       } else {
         TodoItemViewerView(
           item: item,
-          onEdit: { isEditMode = true },
-          onDelete: onDelete
+          onClickEditButton: { isEditMode = true },
+          onClickDeleteButton: onClickDeleteButton
         )
       }
     }
@@ -31,8 +37,8 @@ struct TodoItemView {
 @View
 struct TodoItemViewerView {
   let item: TodoItem
-  let onEdit: () -> Void
-  let onDelete: () -> Void
+  let onClickEditButton: () -> Void
+  let onClickDeleteButton: () -> Void
 
   var body: some View {
     div {
@@ -53,14 +59,14 @@ struct TodoItemViewerView {
             "Delete"
           }
           .onClick {
-            onDelete()
+            onClickDeleteButton()
           }
 
           button(.class("text-blue-600 hover:text-blue-700 font-medium text-sm px-3 py-1 rounded hover:bg-blue-50 transition-colors")) {
             "Edit"
           }
           .onClick {
-            onEdit()
+            onClickEditButton()
           }
         }
       }
@@ -83,9 +89,25 @@ struct TodoItemViewerView {
 
 @View
 struct TodoItemEditView {
-  let item: TodoItem
-  let onCancel: () -> Void
-  let onSave: () -> Void
+  @State var title: String
+  @State var description: String
+  @State var deadline: String
+  let source: TodoItem
+  let onClickCancelButton: () -> Void
+  let onClickDoneButton: (TodoItem) -> Void
+
+  init(
+    item: TodoItem,
+    onClickCancelButton: @escaping () -> Void,
+    onClickDoneButton: @escaping (TodoItem) -> Void
+  ) {
+    self.title = item.title
+    self.description = item.description
+    self.deadline = item.deadline
+    self.source = item
+    self.onClickCancelButton = onClickCancelButton
+    self.onClickDoneButton = onClickDoneButton
+  }
 
   var body: some View {
     div {
@@ -104,12 +126,12 @@ struct TodoItemEditView {
         button(.class("text-gray-600 hover:text-gray-700 font-medium text-sm px-3 py-1 rounded hover:bg-gray-100 transition-colors")) {
           "Cancel"
         }
-        .onClick { onCancel() }
+        .onClick { onClickCancelButton() }
 
         button(.class("bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-3 py-1 rounded transition-colors")) {
           "Done"
         }
-        .onClick { onSave() }
+        .onClick { onClickDoneButton(getUpdatedItem()) }
       }
     }
   }
@@ -128,8 +150,8 @@ struct TodoItemEditView {
     label(.class("block text-sm font-medium text-gray-700 mb-1")) {
       "Title"
 
-      input(.type(.text), .value(item.title), .id("todo-id"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
-        .bindValue(#Binding(item.title))
+      input(.type(.text), .value(title), .id("todo-id"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+        .bindValue($title)
     }
   }
 
@@ -138,11 +160,11 @@ struct TodoItemEditView {
       "Description"
 
       textarea(.id("todo-desc"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24")) {
-        item.description
+        description
       }
       .onInput { event in
         if let value = event.targetValue {
-          item.description = value
+          description = value
         }
       }
     }
@@ -152,8 +174,17 @@ struct TodoItemEditView {
     label(.class("block text-sm font-medium text-gray-700 mb-1")) {
       "Deadline"
 
-      input(.type(.date), .value(item.deadline), .id("todo-deadline"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
-        .bindValue(#Binding(item.deadline))
+      input(.type(.date), .value(deadline), .id("todo-deadline"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+        .bindValue($deadline)
     }
+  }
+
+  func getUpdatedItem() -> TodoItem {
+    TodoItem(
+      id: source.id,
+      title: title,
+      description: description,
+      deadline: deadline
+    )
   }
 }

@@ -2,10 +2,10 @@ import Reactivity
 
 @Reactive
 class TodoViewModel {
-  var items: [TodoItem] = []
+  private(set) var items: [TodoItem] = []
 
-  func onAddNew() {
-    onAddNew(
+  func onClickAddNewButton() {
+    items.append(
       TodoItem(
         id: (items.last?.id ?? 0) + 1,
         title: "Title",
@@ -15,15 +15,11 @@ class TodoViewModel {
     )
   }
 
-  func onAddNew(_ item: TodoItem) {
-    items.append(item)
-  }
-
-  func onDelete(at index: Int) {
+  func onClickDeleteButton(at index: Int) {
     items.remove(at: index)
   }
 
-  func onUpdate(item: TodoItem, at index: Int) {
+  func onClickDoneButton(with item: TodoItem, at index: Int) {
     items[index] = item
   }
 }
