@@ -44,28 +44,21 @@ struct TodoItemViewerView {
           span(.class("text-2xl")) {
             "📌"
           }
+
           h3(.class("text-xl font-bold text-gray-900")) {
             item.title
           }
         }
 
         div(.class("flex gap-2")) {
-          button(
-            .class(
-              "text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded hover:bg-red-50 transition-colors"
-            )
-          ) {
+          button(.class("text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded hover:bg-red-50 transition-colors")) {
             "Delete"
           }
           .onClick {
             onDelete()
           }
 
-          button(
-            .class(
-              "text-blue-600 hover:text-blue-700 font-medium text-sm px-3 py-1 rounded hover:bg-blue-50 transition-colors"
-            )
-          ) {
+          button(.class("text-blue-600 hover:text-blue-700 font-medium text-sm px-3 py-1 rounded hover:bg-blue-50 transition-colors")) {
             "Edit"
           }
           .onClick {
@@ -110,20 +103,12 @@ struct TodoItemEditView {
       }
 
       div(.class("flex gap-2")) {
-        button(
-          .class(
-            "text-gray-600 hover:text-gray-700 font-medium text-sm px-3 py-1 rounded hover:bg-gray-100 transition-colors"
-          )
-        ) {
+        button(.class("text-gray-600 hover:text-gray-700 font-medium text-sm px-3 py-1 rounded hover:bg-gray-100 transition-colors")) {
           "Cancel"
         }
         .onClick { onCancel() }
 
-        button(
-          .class(
-            "bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-3 py-1 rounded transition-colors"
-          )
-        ) {
+        button(.class("bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-3 py-1 rounded transition-colors")) {
           "Done"
         }
         .onClick { onSave() }
@@ -133,37 +118,28 @@ struct TodoItemEditView {
 
   var editForm: some View {
     div(.class("space-y-4")) {
-      titleField
-      descriptionField
-      deadlineField
+      form {
+        titleField
+        descriptionField
+        deadlineField
+      }
     }
   }
 
   var titleField: some View {
-    div {
-      label(.class("block text-sm font-medium text-gray-700 mb-1")) {
-        "Title"
-      }
-      input(
-        .type(.text),
-        .class(
-          "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        )
-      )
-      .bindValue(#Binding(item.title))
+    label(.class("block text-sm font-medium text-gray-700 mb-1")) {
+      "Title"
+
+      input(.type(.text), .id("todo-id"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+        .bindValue(#Binding(item.title))
     }
   }
 
   var descriptionField: some View {
-    div {
-      label(.class("block text-sm font-medium text-gray-700 mb-1")) {
-        "Description"
-      }
-      textarea(
-        .class(
-          "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24"
-        )
-      ) {
+    label(.class("block text-sm font-medium text-gray-700 mb-1")) {
+      "Description"
+
+      textarea(.id("todo-desc"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24")) {
         item.description
       }
       .onInput { event in
@@ -175,17 +151,11 @@ struct TodoItemEditView {
   }
 
   var deadlineField: some View {
-    div {
-      label(.class("block text-sm font-medium text-gray-700 mb-1")) {
-        "Deadline"
-      }
-      input(
-        .type(.date),
-        .class(
-          "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        )
-      )
-      .bindValue(#Binding(item.deadline))
+    label(.class("block text-sm font-medium text-gray-700 mb-1")) {
+      "Deadline"
+
+      input(.type(.date), .id("todo-deadline"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+        .bindValue(#Binding(item.deadline))
     }
   }
 }
