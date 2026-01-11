@@ -8,11 +8,7 @@ struct TodoItemView {
   @State var isEditMode: Bool = false
 
   var body: some View {
-    div(
-      .class(
-        "bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-blue-500"
-      )
-    ) {
+    div(.class("bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-blue-500")) {
       if isEditMode {
         TodoItemEditView(
           item: item,
