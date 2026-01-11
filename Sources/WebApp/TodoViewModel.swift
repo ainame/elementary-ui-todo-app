@@ -1,4 +1,3 @@
-import Foundation
 import Reactivity
 
 @Reactive
@@ -11,9 +10,7 @@ class TodoViewModel {
         id: (items.last?.id ?? 0) + 1,
         title: "Title",
         description: "Description",
-        deadline: "2026-01-15",
-        createdAt: Date(),
-        updatedAt: Date(),
+        deadline: "2026-01-15"
       )
     )
   }
@@ -27,7 +24,6 @@ class TodoViewModel {
   }
 
   func onUpdate(item: TodoItem, at index: Int) {
-    item.updatedAt = Date()
     items[index] = item
   }
 }
