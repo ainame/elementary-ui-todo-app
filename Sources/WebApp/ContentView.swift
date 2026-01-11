@@ -43,7 +43,10 @@ struct ContentView {
 
             div(.class("space-y-4")) {
                 ForEach(items, key: { $0.id }) { item in
-                    TodoItemView(item: item)
+                    TodoItemView(
+                        item: item,
+                        onDelete: { deleteItem(item) }
+                    )
                 }
             }
         }
@@ -62,11 +65,16 @@ struct ContentView {
         )
         nextId += 1
     }
+
+    func deleteItem(_ item: TodoItem) {
+        items.removeAll { $0.id == item.id }
+    }
 }
 
 @View
 struct TodoItemView {
     let item: TodoItem
+    let onDelete: () -> Void
 
     @State var isEditMode: Bool = false
     @State var editTitle: String = ""
@@ -76,16 +84,51 @@ struct TodoItemView {
     var body: some View {
         div(.class("bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-blue-500")) {
             if isEditMode {
-                editModeView
+                TodoItemEditView(
+                    editTitle: $editTitle,
+                    editDescription: $editDescription,
+                    editDeadline: $editDeadline,
+                    onCancel: { cancelEditing() },
+                    onSave: { saveEditing() }
+                )
             } else {
-                viewModeView
+                TodoItemViewerView(
+                    item: item,
+                    onEdit: { startEditing() },
+                    onDelete: onDelete
+                )
             }
         }
     }
 
-    var viewModeView: some View {
+    func startEditing() {
+        editTitle = item.title
+        editDescription = item.description
+        editDeadline = item.deadline
+        isEditMode = true
+    }
+
+    func cancelEditing() {
+        isEditMode = false
+    }
+
+    func saveEditing() {
+        item.title = editTitle
+        item.description = editDescription
+        item.deadline = editDeadline
+        isEditMode = false
+    }
+}
+
+@View
+struct TodoItemViewerView {
+    let item: TodoItem
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
         div {
-            // Header with title and edit button
+            // Header with title and action buttons
             div(.class("flex items-center justify-between mb-3")) {
                 div(.class("flex items-center gap-3")) {
                     span(.class("text-2xl")) {
@@ -96,11 +139,20 @@ struct TodoItemView {
                     }
                 }
 
-                button(.class("text-blue-600 hover:text-blue-700 font-medium text-sm px-3 py-1 rounded hover:bg-blue-50 transition-colors")) {
-                    "Edit"
-                }
-                .onClick {
-                    startEditing()
+                div(.class("flex gap-2")) {
+                    button(.class("text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded hover:bg-red-50 transition-colors")) {
+                        "Delete"
+                    }
+                    .onClick {
+                        onDelete()
+                    }
+
+                    button(.class("text-blue-600 hover:text-blue-700 font-medium text-sm px-3 py-1 rounded hover:bg-blue-50 transition-colors")) {
+                        "Edit"
+                    }
+                    .onClick {
+                        onEdit()
+                    }
                 }
             }
 
@@ -118,8 +170,17 @@ struct TodoItemView {
             }
         }
     }
+}
 
-    var editModeView: some View {
+@View
+struct TodoItemEditView {
+    @Binding var editTitle: String
+    @Binding var editDescription: String
+    @Binding var editDeadline: String
+    let onCancel: () -> Void
+    let onSave: () -> Void
+
+    var body: some View {
         div {
             editHeader
             editForm
@@ -137,14 +198,14 @@ struct TodoItemView {
                     "Cancel"
                 }
                 .onClick {
-                    cancelEditing()
+                    onCancel()
                 }
 
                 button(.class("bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-3 py-1 rounded transition-colors")) {
                     "Done"
                 }
                 .onClick {
-                    saveEditing()
+                    onSave()
                 }
             }
         }
@@ -200,23 +261,5 @@ struct TodoItemView {
             )
             .bindValue($editDeadline)
         }
-    }
-
-    func startEditing() {
-        editTitle = item.title
-        editDescription = item.description
-        editDeadline = item.deadline
-        isEditMode = true
-    }
-
-    func cancelEditing() {
-        isEditMode = false
-    }
-
-    func saveEditing() {
-        item.title = editTitle
-        item.description = editDescription
-        item.deadline = editDeadline
-        isEditMode = false
     }
 }
