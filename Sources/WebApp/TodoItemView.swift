@@ -130,7 +130,7 @@ struct TodoItemEditView {
     label(.class("block text-sm font-medium text-gray-700 mb-1")) {
       "Title"
 
-      input(.type(.text), .id("todo-id"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+      input(.type(.text), .value(item.title), .id("todo-id"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
         .bindValue(#Binding(item.title))
     }
   }
@@ -154,7 +154,7 @@ struct TodoItemEditView {
     label(.class("block text-sm font-medium text-gray-700 mb-1")) {
       "Deadline"
 
-      input(.type(.date), .id("todo-deadline"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
+      input(.type(.date), .value(item.deadline), .id("todo-deadline"), .class("w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"))
         .bindValue(#Binding(item.deadline))
     }
   }
