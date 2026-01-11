@@ -34,6 +34,9 @@ jobs:
           apt-get install -y nodejs
           npm install -g pnpm@9
 
+      - name: Resolve Swift packages
+        run: swift package resolve
+
       - name: Install dependencies
         run: pnpm install
 
